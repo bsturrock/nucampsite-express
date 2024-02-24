@@ -4,12 +4,11 @@ const path = require('path');
 const logger = require('morgan');
 const mongoose = require('mongoose');
 const passport = require('passport');
-
 const config = require('./config')
+
+
 const url = config.mongoUrl
 
-
-// const url = 'mongodb://localhost:27017/nucampsite';
 const connect = mongoose.connect(url, {
     useCreateIndex: true,
     useFindAndModify: false,
@@ -27,6 +26,9 @@ const usersRouter = require('./routes/users');
 const campsiteRouter = require('./routes/campsiteRouter')
 const partnerRouter = require('./routes/partnerRouter')
 const promotionRouter = require('./routes/promotionRouter')
+const uploadRouter = require('./routes/uploadRouter')
+const favorteRouter = require('./routes/favoriteRouter');
+const favoriteRouter = require('./routes/favoriteRouter');
 
 const app = express();
 
@@ -40,12 +42,23 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(passport.initialize());
 
+app.all('*', (req, res, next) => {
+  if (req.secure) {
+    return next();
+  } else {
+      console.log(`Redirecting to: https://${req.hostname}:${app.get('secPort')}${req.url}`);
+      res.redirect(301, `https://${req.hostname}:${app.get('secPort')}${req.url}`);
+  }
+});
+
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/campsites', campsiteRouter)
 app.use('/partners', partnerRouter)
 app.use('/promotions', promotionRouter)
+app.use('/imageUpload', uploadRouter)
+app.use('/favorites', favoriteRouter)
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
